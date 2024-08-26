@@ -1,0 +1,18 @@
+{% extends 'task/base.html' %}
+
+{% block title %}Criar Nova Tarefa{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Criar Nova Tarefa
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Criar Tarefa</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
