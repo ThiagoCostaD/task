@@ -1,0 +1,28 @@
+{% extends "task/base.html" %}
+{% block content %}
+    <title>Editar Tarefa</title>
+
+<body>
+    <h1>Editar Tarefa</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="title">Título:</label>
+        <input type="text" id="title" name="title" value="{{ task.title }}">
+        <br>
+        <label for="description">Descrição:</label>
+        <input type="text" id="description" name="description" value="{{ task.description }}">
+        <br>
+        <label for="done">Feito:</label>
+        <input type="checkbox" id="done" name="done" {% if task.done %}checked{% endif %}>
+        <br>
+        <label for="due_date">Data de Vencimento:</label>
+        <input type="date" id="due_date" name="due_date" value="{{ task.due_date }}">
+        <br>
+        <button >
+        <a href="{% url 'task_list' %}">Voltar</a>
+        </button>
+        <button type="submit">Salvar</button>
+    </form>
+</body>
+
+{% endblock %}
