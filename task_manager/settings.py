@@ -138,3 +138,7 @@ MESSAGE_TAGS = {
     constants.SUCCESS: 'message-success',
     constants.WARNING: 'message-warning',
 }
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'task_list'
+LOGOUT_REDIRECT_URL = 'login'
