@@ -26,6 +26,12 @@
                     <a class="nav-link" href="{% url 'create_task' %}">Criar Tarefa</a>
                 </li>
             </ul>
+            {% if user.is_authenticated %}
+            <p class="navbar-nav nav-item">
+                Você está logado como: {{ user.username }}
+            </p>
+            {% endif %}
+            
             <!-- Verifica se o usuário está autenticado -->
             {% if user.is_authenticated %}
                 <ul class="navbar-nav">

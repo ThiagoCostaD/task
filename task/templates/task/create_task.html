@@ -1,33 +1,12 @@
 {% extends 'task/base.html' %}
-{% block content %}
-<h2>{% if task %}Editar{% else %}Criar{% endif %} Tarefa</h2>
-<form method="post">
-    {% csrf_token %}
-    <label for="title">Título:</label>
-    <input type="text" id="title" name="title" value="{% if task %}{{ task.title }}{% endif %}">
-    <br>
-    <label for="description">Descrição:</label>
-    <input type="text" id="description" name="description" value="{% if task %}
-    {{ task.description }}
-    {% endif %}">
-    <br>
-    <label for="done">Feito:</label>
-    <input type="checkbox" id="done" name="done" {% if task and task.done %} checked {% endif %}>
-    <br>
-    <label for="due_date">Data de Vencimento:</label>
-    <input type="date" id="due_date" name="due_date" value="{% if task %}
-    {{ task.due_date }}
-     {% endif %}">
-    <br>
 
-    <button type="submit" class="btn btn-primary">
-        {% if task %}
-        Salvar
-        {% else %}
-        Criar
-        {% endif %}
-        Tarefa
-    </button>
-    {{ message.errors }}
-</form>
+{% block content %}
+<div class="container">
+    <h2>Criar Nova Tarefa</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Criar Tarefa</button>
+    </form>
+</div>
 {% endblock %}

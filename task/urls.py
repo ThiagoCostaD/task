@@ -1,30 +1,36 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from . import views
+from .views import CreateTask, DeleteTask, EditTask, RegisterView, TaskListView
 
 base_name = 'task'
 
 urlpatterns = [
-    path('', views.task_list, name='task_list'),
+    path(
+        '',
+        TaskListView.as_view(),
+        name='task_list'
+    ),
     path(
         'create/',
-        views.create_task,
+        CreateTask.as_view(),
         name='create_task'
     ),
     path(
         'edit/<int:task_id>/',
-        views.edit_task,
+        EditTask.as_view(),
         name='edit_task'
     ),
     path(
         'delete/<int:task_id>/',
-        views.delete_task,
+        DeleteTask.as_view(),
         name='delete_task'
     ),
     path(
         'login/',
-        auth_views.LoginView.as_view(template_name='task/login.html'),
+        auth_views.LoginView.as_view(
+            template_name='task/login.html'
+        ),
         name='login'
     ),
     path(
@@ -34,7 +40,7 @@ urlpatterns = [
     ),
     path(
         'register/',
-        views.register,
+        RegisterView.as_view(),
         name='register'
     ),
 ]
