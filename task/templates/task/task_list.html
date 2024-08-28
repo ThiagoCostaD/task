@@ -1,0 +1,47 @@
+{% extends 'task/base.html' %}
+{% block content %}
+<h2>Lista de Tarefas</h2>
+{% if user.is_authenticated %}
+<form method="get" class="mb-3">
+    <select name="filter" onchange="this.form.submit()">
+        <option value="all" {% if filter_option == 'all' %}selected{% endif %}>Todas</option>
+        <option value="completed" {% if filter_option == 'completed' %}selected{% endif %}>Concluídas</option>
+        <option value="pending" {% if filter_option == 'pending' %}selected{% endif %}>Pendentes</option>
+    </select>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Descrição</th>
+            <th>Concluída</th>
+            <th>Data de Vencimento</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task.title }}</td>
+            <td>{{ task.description }}</td>
+            <td>{{ task.completed|yesno:"Sim,Não" }}</td>
+            <td>{{ task.due_date }}</td>
+            <td>
+                <a href="{% url 'edit_task' task.id %}" class="btn btn-primary btn-sm">Editar</a>
+                <a href="{% url 'delete_task' task.id %}" class="btn btn-danger btn-sm">Excluir</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">Nenhuma tarefa encontrada.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    
+</table>
+<a href="{% url 'create_task' %}" class="btn btn-success">Criar Nova Tarefa</a>
+{% else %}
+<p>Você precisa estar logado para acessar essa página.</p>
+{% endif %}
+{% endblock %}

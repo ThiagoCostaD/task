@@ -6,6 +6,7 @@ default:
 	@echo "make createsuperuser - Criar um usuario"
 	@echo "make start           - Inicializa container, e executa serviço Django"
 	@echo "make test            - Fazer teste com o pytest"
+	@echo "make shell           - Acessar o shell do container"
 
 make:
 	python manage.py makemigrations
@@ -21,3 +22,5 @@ start:
 
 test:
 	pytest . --cov-report term --cov=. --cov-fail-under=80
+shell:
+	python manage.py shell
