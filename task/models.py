@@ -34,7 +34,6 @@ class Task(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name='Usuário',
-
     )
 
     class Meta:

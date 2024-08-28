@@ -17,12 +17,12 @@ urlpatterns = [
         name='create_task'
     ),
     path(
-        'edit/<int:task_id>/',
+        'edit/<int:pk>/',
         EditTask.as_view(),
         name='edit_task'
     ),
     path(
-        'delete/<int:task_id>/',
+        'delete/<int:pk>/',
         DeleteTask.as_view(),
         name='delete_task'
     ),

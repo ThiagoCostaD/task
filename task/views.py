@@ -2,31 +2,39 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, redirect, render
+from django.http import Http404
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import FormView, ListView
+from django.views.generic import DeleteView, FormView, ListView
 from django.views.generic.edit import CreateView, UpdateView
 
 from .forms import TaskForm
 from .models import Task
 
 
-class TaskListView(ListView, LoginRequiredMixin):
+class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     template_name = 'task/task_list.html'
-    context_name = 'tasks'
+    context_object_name = 'tasks'
     login_url = 'task/login.html'
 
     def get_queryset(self):
         if not self.request.user.is_authenticated:
             return Task.objects.none()
-        filter_option = self.request.GET.get('all')
+        filter_option = self.request.GET.get(
+            'filter', 'all')
         if filter_option == 'completed':
             return Task.objects.filter(user=self.request.user, completed=True)
         elif filter_option == 'pending':
             return Task.objects.filter(user=self.request.user, completed=False)
         else:
             return Task.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter_option'] = self.request.GET.get(
+            'filter', 'all')
+        return context
 
 
 class CreateTask(LoginRequiredMixin, CreateView):
@@ -36,7 +44,9 @@ class CreateTask(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('task_list')
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
+        task = form.save(commit=False)
+        task.user = self.request.user
+        task.save()
         return super().form_valid(form)
 
 
@@ -48,47 +58,37 @@ class EditTask(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
+        messages.success(self.request, 'Tarefa atualizada com sucesso.')
         return super().form_valid(form)
 
-    def edit_task(request, task_id):
-        task = Task.objects.get(id=task_id)
-        if request.method == 'POST':
-            form = TaskForm(request.POST, instance=task)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Tarefa atualizada com sucesso.')
-                return redirect('task_list')
-        else:
-            form = TaskForm(instance=task)
-        return render(
-            request,
-            'task/edit_task.html',
-            {'form': form, 'task': task}
-        )
+    def get_object(self, queryset=None):
+        """ Garante que apenas o dono da tarefa possa editá-la """
+        obj = super().get_object()
+        if not obj.user == self.request.user:
+            raise Http404
+        return obj
 
 
-class DeleteTask(LoginRequiredMixin, CreateView):
+class DeleteTask(LoginRequiredMixin, DeleteView):
     model = Task
     template_name = 'task/delete_task.html'
-    form_class = TaskForm
     success_url = reverse_lazy('task_list')
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        messages.success(self.request, 'Tarefa excluída com sucesso.')
-        return super().form_valid(form)
+    def get_object(self, queryset=None):
+        object = super().get_object()
+        if not object.user == self.request.user:
+            raise Http404
+        return object
 
-    def delete_task(request, task_id):
-        task = get_object_or_404(Task, id=task_id, user=request.user)
-        if request.method == 'POST':
-            task.delete()
-            messages.success(request, 'Tarefa excluída com sucesso.')
-            return redirect('task_list')
-        return redirect(request, 'task/delete_task.html', {'task': task})
+    def delete(self, request, *args, **kwargs):
+
+        response = super().delete(request, *args, **kwargs)
+        messages.success(self.request, 'Tarefa excluída com sucesso.')
+        return response
 
 
 class LoginView(FormView):
-    temaple_name = 'task/login.html'
+    template_name = 'task/login.html'
     form_class = AuthenticationForm
 
     def form_valid(self, form):
@@ -107,7 +107,7 @@ class LoginView(FormView):
 
 
 class LogoutView(FormView):
-    temaple_name = 'task/logout.html'
+    template_name = 'task/logout.html'
     form_class = AuthenticationForm
 
     def form_valid(self, form):
@@ -119,9 +119,11 @@ class LogoutView(FormView):
 class RegisterView(FormView):
     template_name = 'task/register.html'
     form_class = UserCreationForm
+    # Redirect after successful registration
+    success_url = reverse_lazy('task_list')
 
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
         messages.success(self.request, 'Usuário criado com sucesso.')
-        return redirect('task_list')
+        return redirect(self.success_url)

@@ -1,12 +1,37 @@
 {% extends 'task/base.html' %}
-
 {% block content %}
-<div class="container">
-    <h2>Criar Nova Tarefa</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Criar Tarefa</button>
-    </form>
-</div>
+<h2>{% if task %}Editar{% else %}Criar{% endif %} Tarefa</h2>
+<form method="post">
+    {% csrf_token %}
+
+    <input type="hidden" id="user" name="user" value="{{ request.user.id }}"> 
+
+    <label for="title">Título:</label>
+    <input type="text" id="title" name="title" value="{% if task %}{{ task.title }}{% endif %}">
+    <br>
+    <label for="description">Descrição:</label>
+    <input type="text" id="description" name="description" value="{% if task %}
+    {{ task.description }}
+    {% endif %}">
+    <br>
+    <label for="completed">Concluída:</label> {## Corrigido o nome do campo para 'completed' #}
+    <input type="checkbox" id="completed" name="completed" {% if task and task.completed %} checked {% endif %}> 
+    <br>
+    <label for="due_date">Data de Vencimento:</label>
+    <input type="date" id="due_date" name="due_date" value="{% if task %}
+    {{ task.due_date|date:'Y-m-d' }} {## Formatação da data para o formato correto #}
+     {% endif %}">
+    <br>
+    <a href="{% url 'task_list' %}" class="btn btn-secondary">Voltar</a>
+
+    <button type="submit" class="btn btn-primary">
+        {% if task %}
+        Salvar
+        {% else %}
+        Criar
+        {% endif %}
+        Tarefa
+    </button>
+    {{ message.errors }}
+</form>
 {% endblock %}
