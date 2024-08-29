@@ -1,11 +1,19 @@
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import include, path
 
-from .views import CreateTask, DeleteTask, EditTask, RegisterView, TaskListView
+from .views.api import (CreateTaskViewSet, DeleteTaskViewSet, EditTaskViewSet,
+                        LoginViewSet, LogoutViewSet, RegisterViewSet,
+                        TaskViewSet)
+from .views.site import (CreateTask, DeleteTask, EditTask, RegisterView,
+                         TaskListView)
 
 base_name = 'task'
 
 urlpatterns = [
+    path(
+        'api-auth/',
+        include('rest_framework.urls', namespace='rest_framework')
+    ),
     path(
         '',
         TaskListView.as_view(),
@@ -42,5 +50,40 @@ urlpatterns = [
         'register/',
         RegisterView.as_view(),
         name='register'
+    ),
+    path(
+        'api/task/',
+        TaskViewSet.as_view(),
+        name='api_task'
+    ),
+    path(
+        'api/create/',
+        CreateTaskViewSet.as_view({'post': 'create'}),
+        name='api_create_task'
+    ),
+    path(
+        'api/edit/<int:pk>/',
+        EditTaskViewSet.as_view({'put': 'update'}),
+        name='api_edit_task'
+    ),
+    path(
+        'api/delete/<int:pk>/',
+        DeleteTaskViewSet.as_view({'delete': 'destroy'}),
+        name='api_delete_task'
+    ),
+    path(
+        'api/login/',
+        LoginViewSet.as_view({'get': 'login'}),
+        name='api_login'
+    ),
+    path(
+        'api/logout/',
+        LogoutViewSet.as_view({'get': 'logout'}),
+        name='api_logout'
+    ),
+    path(
+        'api/register/',
+        RegisterViewSet.as_view({'post': 'create'}),
+        name='api_register'
     ),
 ]

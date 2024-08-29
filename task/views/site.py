@@ -8,8 +8,8 @@ from django.urls import reverse_lazy
 from django.views.generic import DeleteView, FormView, ListView
 from django.views.generic.edit import CreateView, UpdateView
 
-from .forms import TaskForm
-from .models import Task
+from ..forms import TaskForm
+from ..models import Task
 
 
 class TaskListView(LoginRequiredMixin, ListView):
