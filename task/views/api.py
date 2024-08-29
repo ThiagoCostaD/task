@@ -1,6 +1,8 @@
+from django.contrib.auth import authenticate, login, logout
 from rest_framework import status, viewsets
 from rest_framework.authentication import (SessionAuthentication,
                                            TokenAuthentication)
+from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -70,24 +72,39 @@ class DeleteTaskViewSet(viewsets.ModelViewSet):
 
 class LoginViewSet(viewsets.ViewSet):
     def login(self, request):
-        return Response(
-            {'token': request.user.auth_token.key}
-        )
-
-    def get_queryset(self):
-        return self.request.user.tasks.all()
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            token = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key})
+        else:
+            return Response(
+                {'error': 'Invalid credentials'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
 class LogoutViewSet(viewsets.ViewSet):
-    def logout(self, request):
-        request.user.auth_token.delete()
-        return Response(
-            {'status': 'logged out'},
-            status=status.HTTP_200_OK
-        )
+    def create(self, request):
+        if request.user.is_authenticated:
+            try:
+                token = Token.objects.get(user=request.user)
+                token.delete()
+            except Token.DoesNotExist:
+                pass
 
-    def get_queryset(self):
-        return self.request.user.tasks.all()
+            logout(request)
+            return Response(
+                {'status': 'logged out'},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {'error': 'User not authenticated'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
 class RegisterViewSet(viewsets.GenericViewSet):
@@ -96,8 +113,12 @@ class RegisterViewSet(viewsets.GenericViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+
+        user = serializer.save()
         return Response(
-            {'status': 'registered'},
-            status=status.HTTP_201_CREATED
-        )
+            {
+                'status': 'registered',
+                'user_id': user.id,
+                'username': user.username
+            },
+            status=status.HTTP_201_CREATED)

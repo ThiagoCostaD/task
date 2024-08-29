@@ -76,6 +76,7 @@ urlpatterns = [
         LoginViewSet.as_view({'get': 'login'}),
         name='api_login'
     ),
+
     path(
         'api/logout/',
         LogoutViewSet.as_view({'get': 'logout'}),
