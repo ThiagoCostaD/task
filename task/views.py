@@ -17,6 +17,7 @@ class TaskListView(LoginRequiredMixin, ListView):
     template_name = 'task/task_list.html'
     context_object_name = 'tasks'
     login_url = 'task/login.html'
+    paginate_by = 10
 
     def get_queryset(self):
         if not self.request.user.is_authenticated:
@@ -58,11 +59,11 @@ class EditTask(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
+        self.object = form.save()
         messages.success(self.request, 'Tarefa atualizada com sucesso.')
         return super().form_valid(form)
 
     def get_object(self, queryset=None):
-        """ Garante que apenas o dono da tarefa possa editá-la """
         obj = super().get_object()
         if not obj.user == self.request.user:
             raise Http404

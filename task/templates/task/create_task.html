@@ -3,9 +3,6 @@
 <h2>{% if task %}Editar{% else %}Criar{% endif %} Tarefa</h2>
 <form method="post">
     {% csrf_token %}
-
-    <input type="hidden" id="user" name="user" value="{{ request.user.id }}"> 
-
     <label for="title">Título:</label>
     <input type="text" id="title" name="title" value="{% if task %}{{ task.title }}{% endif %}">
     <br>
@@ -22,16 +19,27 @@
     {{ task.due_date|date:'Y-m-d' }} {## Formatação da data para o formato correto #}
      {% endif %}">
     <br>
-    <a href="{% url 'task_list' %}" class="btn btn-secondary">Voltar</a>
 
-    <button type="submit" class="btn btn-primary">
-        {% if task %}
-        Salvar
-        {% else %}
-        Criar
+
+    <input type="hidden" id="user" name="user" value="{{ request.user.id }}"> 
+
+      
+        <a href="{% url 'task_list' %}" class="button-form">Voltar</a>
+    
+        <button type="submit" class="button-form">
+            {% if task %}
+            Salvar
+            {% else %}
+            Criar
+            {% endif %}
+            Tarefa
+        </button>
+    
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                {{ form.errors }}
+            </div>
         {% endif %}
-        Tarefa
-    </button>
-    {{ message.errors }}
-</form>
-{% endblock %}
+    </form>
+    {% endblock %}
+    

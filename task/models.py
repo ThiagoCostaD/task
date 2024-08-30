@@ -27,7 +27,7 @@ class Task(models.Model):
     )
     due_date = models.DateField(
         verbose_name='Data de vencimento',
-        blank=True,
+        blank=False,
         null=True,
     )
     user = models.ForeignKey(
