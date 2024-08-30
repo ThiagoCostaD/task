@@ -73,13 +73,13 @@ urlpatterns = [
     ),
     path(
         'api/login/',
-        LoginViewSet.as_view({'get': 'login'}),
+        LoginViewSet.as_view({'post': 'create'}),
         name='api_login'
     ),
 
     path(
         'api/logout/',
-        LogoutViewSet.as_view({'get': 'logout'}),
+        LogoutViewSet.as_view({'post': 'logout'}),
         name='api_logout'
     ),
     path(

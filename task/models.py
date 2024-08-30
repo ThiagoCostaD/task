@@ -32,6 +32,7 @@ class Task(models.Model):
     )
     user = models.ForeignKey(
         User,
+        related_name='tasks',
         on_delete=models.CASCADE,
         verbose_name='Usuário',
     )

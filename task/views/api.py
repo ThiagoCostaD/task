@@ -3,12 +3,14 @@ from rest_framework import status, viewsets
 from rest_framework.authentication import (SessionAuthentication,
                                            TokenAuthentication)
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..models import Task
-from ..serializer import TaskSerializer, UserSerializer
+from ..serializer import (CreateTaskSerializer, LoginSerializer,
+                          TaskSerializer, UserSerializer)
 
 
 class TaskViewSet(APIView):
@@ -31,7 +33,7 @@ class TaskViewSet(APIView):
 class CreateTaskViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
-    serializer_class = TaskSerializer
+    serializer_class = CreateTaskSerializer
 
     def get_queryset(self):
         return self.request.user.tasks.all()
@@ -71,19 +73,33 @@ class DeleteTaskViewSet(viewsets.ModelViewSet):
 
 
 class LoginViewSet(viewsets.ViewSet):
-    def login(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            token = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key})
-        else:
-            return Response(
-                {'error': 'Invalid credentials'},
-                status=status.HTTP_401_UNAUTHORIZED
+    permission_classes = (AllowAny,)
+
+    @action(detail=False, methods=['post'])
+    def create(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            username = request.data.get('username')
+            password = request.data.get('password')
+            user = authenticate(
+                request,
+                username=username,
+                password=password
             )
+
+            if user is not None:
+                login(request, user)
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key})
+            else:
+                return Response(
+                    {'error': 'Credenciais inválidas'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class LogoutViewSet(viewsets.ViewSet):
